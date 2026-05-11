@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Аффирмация дня</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; touch-action: manipulation; }
+
+    #screen {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(1.25rem, 5vw, 2.5rem);
+      text-align: center;
+      transition: background 0.65s ease;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #screen:active { cursor: grabbing; }
+
+    .label {
+      position: fixed;
+      top: max(1rem, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      font: 500 0.7rem/1.2 system-ui, sans-serif;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    #phrase {
+      font: 300 clamp(1.35rem, 5.2vw, 2.1rem)/1.45 "Segoe UI", system-ui, sans-serif;
+      color: rgba(255, 255, 255, 0.94);
+      text-shadow: 0 2px 28px rgba(0, 0, 0, 0.18);
+      max-width: 20ch;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    #phrase.fade {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .hint {
+      position: fixed;
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      font: 400 0.72rem/1 system-ui, sans-serif;
+      color: rgba(255, 255, 255, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div id="screen" aria-live="polite">
+    <span class="label">Аффирмация дня</span>
+    <p id="phrase"></p>
+    <span class="hint">Свайп — новая фраза</span>
+  </div>
+
+  <script>
+    const affirmations = [
+      "Тебе не нужно торопить свою жизнь",
+      "Сегодня достаточно того, что ты есть",
+      "Ты можешь отдыхать без чувства вины",
+      "Медленно — тоже нормально",
+      "Твоё «нет» имеет такой же вес, как «да»",
+      "Не нужно всем нравиться",
+      "Ошибка — не приговор, а шаг",
+      "У тебя уже больше сделано, чем кажется",
+      "Мягкость к себе — не слабость",
+      "Не всё должно быть решено сегодня",
+      "Твоё тело заслуживает бережности",
+      "Ты имеешь право на тишину",
+      "Сравнивать себя с другими — необязательно",
+      "Забота о себе — не эгоизм",
+      "Ты можешь начать с малого",
+      "Твои чувства — валидны",
+      "Не обязательно быть продуктивным каждый день",
+      "Не обязательно всё успевать",
+      "Просить о помощи — нормально",
+      "Ты можешь позволить себе спокойствие",
+      "Один шаг вперёд — уже движение",
+      "Ты можешь менять курс, когда захочешь",
+      "Отдых — часть пути, а не помеха",
+      "Твоё темп — твой темп",
+      "Сегодня можно просто дышать",
+    ];
+
+    const backgrounds = [
+      "linear-gradient(145deg, #1a1a2e 0%, #4a1942 45%, #16213e 100%)",
+      "linear-gradient(160deg, #0f3460 0%, #533483 50%, #e94560 120%)",
+      "linear-gradient(135deg, #2d132c 0%, #801336 40%, #c72c41 100%)",
+      "linear-gradient(155deg, #1b262c 0%, #0f4c75 42%, #3282b8 100%)",
+      "linear-gradient(140deg, #14274e 0%, #394867 50%, #9ba4b4 130%)",
+      "linear-gradient(165deg, #222831 0%, #30475e 45%, #f05454 95%)",
+      "linear-gradient(130deg, #2c003e 0%, #51087e 40%, #bc6ff1 110%)",
+      "linear-gradient(150deg, #1f4068 0%, #1b998b 55%, #cbf3bb 140%)",
+      "linear-gradient(145deg, #2d4059 0%, #ea5455 50%, #f07b3f 100%)",
+      "linear-gradient(160deg, #212121 0%, #323232 40%, #0d7377 100%)",
+      "linear-gradient(135deg, #352f44 0%, #2a2438 35%, #dbd8e3 130%)",
+      "linear-gradient(155deg, #00334e 0%, #145374 50%, #5588a3 100%)",
+      "linear-gradient(140deg, #1a1a2e 0%, #162447 45%, #1f4068 100%)",
+      "linear-gradient(165deg, #393e46 0%, #929aab 60%, #eeeeee 130%)",
+      "linear-gradient(130deg, #2d4059 0%, #ea5455 35%, #f9f9f9 125%)",
+      "linear-gradient(150deg, #1b1b2f 0%, #4f3466 50%, #e94560 115%)",
+      "linear-gradient(145deg, #0d7377 0%, #14ffec 80%, #323232 130%)",
+      "linear-gradient(160deg, #2e0249 0%, #570a57 45%, #a91079 100%)",
+      "linear-gradient(135deg, #1f2833 0%, #45a29e 50%, #66fcf1 120%)",
+      "linear-gradient(155deg, #22223b 0%, #4a4e69 50%, #c9ada7 125%)",
+      "linear-gradient(140deg, #03045e 0%, #0077b6 45%, #90e0ef 130%)",
+      "linear-gradient(165deg, #2b2d42 0%, #8d99ae 50%, #edf2f4 135%)",
+      "linear-gradient(130deg, #10002b 0%, #240046 40%, #5a189a 110%)",
+      "linear-gradient(150deg, #1d3557 0%, #457b9d 50%, #a8dadc 125%)",
+      "linear-gradient(145deg, #264653 0%, #2a9d8f 55%, #e9c46a 120%)",
+    ];
+
+    const screen = document.getElementById("screen");
+    const phraseEl = document.getElementById("phrase");
+
+    let i = 0;
+
+    function applyIndex(n) {
+      i = ((n % affirmations.length) + affirmations.length) % affirmations.length;
+      phraseEl.classList.add("fade");
+      setTimeout(() => {
+        phraseEl.textContent = affirmations[i];
+        screen.style.background = backgrounds[i % backgrounds.length];
+        phraseEl.classList.remove("fade");
+      }, 180);
+    }
+
+    applyIndex(0);
+
+    const SWIPE = 48;
+    let sx, sy, tracking;
+
+    function start(x, y) {
+      tracking = true;
+      sx = x;
+      sy = y;
+    }
+    function end(x, y) {
+      if (!tracking) return;
+      tracking = false;
+      const dx = x - sx;
+      const dy = y - sy;
+      if (Math.abs(dx) < SWIPE && Math.abs(dy) < SWIPE) return;
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        applyIndex(dx < 0 ? i + 1 : i - 1);
+      } else {
+        applyIndex(dy < 0 ? i + 1 : i - 1);
+      }
+    }
+
+    screen.addEventListener("touchstart", (e) => {
+      const t = e.changedTouches[0];
+      start(t.clientX, t.clientY);
+    }, { passive: true });
+    screen.addEventListener("touchend", (e) => {
+      const t = e.changedTouches[0];
+      end(t.clientX, t.clientY);
+    }, { passive: true });
+
+    screen.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      start(e.clientX, e.clientY);
+    });
+    window.addEventListener("mouseup", (e) => {
+      end(e.clientX, e.clientY);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") applyIndex(i + 1);
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") applyIndex(i - 1);
+    });
+  </script>
+</body>
+</html>
