@@ -91,7 +91,7 @@
       "Один шаг вперёд — уже движение",
       "Ты можешь менять курс, когда захочешь",
       "Отдых — часть пути, а не помеха",
-      "Твоё темп — твой темп",
+      "Твой темп — твой темп",
       "Сегодня можно просто дышать",
     ];
 
@@ -168,6 +168,9 @@
     screen.addEventListener("touchend", (e) => {
       const t = e.changedTouches[0];
       end(t.clientX, t.clientY);
+    }, { passive: true });
+    screen.addEventListener("touchcancel", () => {
+      tracking = false;
     }, { passive: true });
 
     screen.addEventListener("mousedown", (e) => {
