@@ -9,6 +9,7 @@
     html, body { height: 100%; overflow: hidden; touch-action: manipulation; }
 
     #screen {
+      position: relative;
       height: 100%;
       width: 100%;
       display: flex;
@@ -24,6 +25,29 @@
     }
     #screen:active { cursor: grabbing; }
 
+    .stars {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 6px rgba(186, 230, 253, 0.75);
+      animation-name: twinkle;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.35); }
+    }
+
     .label {
       position: fixed;
       top: max(1rem, env(safe-area-inset-top));
@@ -33,6 +57,7 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: rgba(255, 255, 255, 0.45);
+      z-index: 2;
     }
 
     #phrase {
@@ -43,6 +68,7 @@
       opacity: 1;
       transform: translateY(0);
       transition: opacity 0.35s ease, transform 0.35s ease;
+      z-index: 2;
     }
     #phrase.fade {
       opacity: 0;
@@ -56,11 +82,13 @@
       transform: translateX(-50%);
       font: 400 0.72rem/1 system-ui, sans-serif;
       color: rgba(255, 255, 255, 0.35);
+      z-index: 2;
     }
   </style>
 </head>
 <body>
   <div id="screen" aria-live="polite">
+    <div class="stars" id="stars" aria-hidden="true"></div>
     <span class="label">Аффирмация дня</span>
     <p id="phrase"></p>
     <span class="hint">Свайп — новая фраза</span>
@@ -96,32 +124,47 @@
     ];
 
     const backgrounds = [
-      "linear-gradient(145deg, #1a1a2e 0%, #4a1942 45%, #16213e 100%)",
-      "linear-gradient(160deg, #0f3460 0%, #533483 50%, #e94560 120%)",
-      "linear-gradient(135deg, #2d132c 0%, #801336 40%, #c72c41 100%)",
-      "linear-gradient(155deg, #1b262c 0%, #0f4c75 42%, #3282b8 100%)",
-      "linear-gradient(140deg, #14274e 0%, #394867 50%, #9ba4b4 130%)",
-      "linear-gradient(165deg, #222831 0%, #30475e 45%, #f05454 95%)",
-      "linear-gradient(130deg, #2c003e 0%, #51087e 40%, #bc6ff1 110%)",
-      "linear-gradient(150deg, #1f4068 0%, #1b998b 55%, #cbf3bb 140%)",
-      "linear-gradient(145deg, #2d4059 0%, #ea5455 50%, #f07b3f 100%)",
-      "linear-gradient(160deg, #212121 0%, #323232 40%, #0d7377 100%)",
-      "linear-gradient(135deg, #352f44 0%, #2a2438 35%, #dbd8e3 130%)",
-      "linear-gradient(155deg, #00334e 0%, #145374 50%, #5588a3 100%)",
-      "linear-gradient(140deg, #1a1a2e 0%, #162447 45%, #1f4068 100%)",
-      "linear-gradient(165deg, #393e46 0%, #929aab 60%, #eeeeee 130%)",
-      "linear-gradient(130deg, #2d4059 0%, #ea5455 35%, #f9f9f9 125%)",
-      "linear-gradient(150deg, #1b1b2f 0%, #4f3466 50%, #e94560 115%)",
-      "linear-gradient(145deg, #0d7377 0%, #14ffec 80%, #323232 130%)",
-      "linear-gradient(160deg, #2e0249 0%, #570a57 45%, #a91079 100%)",
-      "linear-gradient(135deg, #1f2833 0%, #45a29e 50%, #66fcf1 120%)",
-      "linear-gradient(155deg, #22223b 0%, #4a4e69 50%, #c9ada7 125%)",
-      "linear-gradient(140deg, #03045e 0%, #0077b6 45%, #90e0ef 130%)",
-      "linear-gradient(165deg, #2b2d42 0%, #8d99ae 50%, #edf2f4 135%)",
-      "linear-gradient(130deg, #10002b 0%, #240046 40%, #5a189a 110%)",
-      "linear-gradient(150deg, #1d3557 0%, #457b9d 50%, #a8dadc 125%)",
-      "linear-gradient(145deg, #264653 0%, #2a9d8f 55%, #e9c46a 120%)",
+      "linear-gradient(165deg, #c8ecff 0%, #4a9fe8 42%, #0c1e3d 100%)",
+      "linear-gradient(145deg, #b8e4ff 0%, #3b82f6 45%, #020617 100%)",
+      "linear-gradient(155deg, #a5d8ff 0%, #2563eb 48%, #0a1628 100%)",
+      "linear-gradient(160deg, #93c5fd 0%, #1d4ed8 50%, #020c1a 100%)",
+      "linear-gradient(135deg, #bae6fd 0%, #0369a1 40%, #0c1929 100%)",
+      "linear-gradient(170deg, #7dd3fc 0%, #0284c7 45%, #020617 100%)",
+      "linear-gradient(150deg, #e0f2fe 0%, #38bdf8 38%, #0f172a 100%)",
+      "linear-gradient(140deg, #cffafe 0%, #0ea5e9 42%, #082f49 100%)",
+      "linear-gradient(158deg, #dbeafe 0%, #60a5fa 45%, #0f172a 100%)",
+      "linear-gradient(145deg, #bfdbfe 0%, #2563eb 50%, #020617 100%)",
+      "linear-gradient(165deg, #a5f3fc 0%, #0891b2 42%, #0c1e2e 100%)",
+      "linear-gradient(152deg, #c4e8ff 0%, #1e40af 48%, #020617 100%)",
+      "linear-gradient(138deg, #e0f2ff 0%, #3b82f6 40%, #0a1628 100%)",
+      "linear-gradient(168deg, #9bd5ff 0%, #1e3a8a 52%, #020617 100%)",
+      "linear-gradient(155deg, #b4e0ff 0%, #2563eb 44%, #0f172a 100%)",
+      "linear-gradient(148deg, #d4f1ff 0%, #0ea5e9 46%, #082f49 100%)",
+      "linear-gradient(162deg, #8ec5ff 0%, #1d4ed8 50%, #020c1a 100%)",
+      "linear-gradient(142deg, #ecf6ff 0%, #60a5fa 42%, #0c1929 100%)",
+      "linear-gradient(175deg, #7ec8ff 0%, #0369a1 48%, #020617 100%)",
+      "linear-gradient(150deg, #c2e9ff 0%, #2563eb 45%, #0a1628 100%)",
+      "linear-gradient(158deg, #a8dcff 0%, #1e40af 50%, #020617 100%)",
+      "linear-gradient(145deg, #eef8ff 0%, #38bdf8 40%, #0f172a 100%)",
+      "linear-gradient(160deg, #6eb6ff 0%, #1e3a8a 46%, #020c1a 100%)",
+      "linear-gradient(152deg, #bfe6ff 0%, #0284c7 44%, #082f49 100%)",
+      "linear-gradient(165deg, #9fd6ff 0%, #1d4ed8 48%, #020617 100%)",
     ];
+
+    const starsEl = document.getElementById("stars");
+    const starCount = 85;
+    for (let s = 0; s < starCount; s++) {
+      const star = document.createElement("span");
+      star.className = "star";
+      star.style.left = Math.random() * 100 + "%";
+      star.style.top = Math.random() * 100 + "%";
+      const size = Math.random() * 2.2 + 0.45;
+      star.style.width = size + "px";
+      star.style.height = size + "px";
+      star.style.animationDelay = Math.random() * 5 + "s";
+      star.style.animationDuration = Math.random() * 3.5 + 2 + "s";
+      starsEl.appendChild(star);
+    }
 
     const screen = document.getElementById("screen");
     const phraseEl = document.getElementById("phrase");
