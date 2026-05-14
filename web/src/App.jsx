@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import MagicRings from "./MagicRings";
 
 const affirmations = [
   "Тебе не нужно торопить свою жизнь",
@@ -86,6 +87,13 @@ export default function App() {
 
         body {
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .magic-rings-layer {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
         }
 
         .app {
@@ -323,6 +331,15 @@ export default function App() {
           }
         }
 
+        .orb,
+        .center-glow,
+        .light-wave,
+        .shooting-star,
+        .stars,
+        .floating-symbol {
+          z-index: 1;
+        }
+
         .content {
           position: relative;
           z-index: 2;
@@ -429,6 +446,32 @@ export default function App() {
           }
         }
       `}</style>
+
+      <div className="magic-rings-layer" aria-hidden="true">
+        <MagicRings
+          color="#A855F7"
+          colorTwo="#6366F1"
+          ringCount={6}
+          speed={1}
+          attenuation={10}
+          lineThickness={2}
+          baseRadius={0.35}
+          radiusStep={0.1}
+          scaleRate={0.1}
+          opacity={1}
+          blur={0}
+          noiseAmount={0.1}
+          rotation={0}
+          ringGap={1.5}
+          fadeIn={0.7}
+          fadeOut={0.5}
+          followMouse={false}
+          mouseInfluence={0.2}
+          hoverScale={1.2}
+          parallax={0.05}
+          clickBurst={false}
+        />
+      </div>
 
       <div className="orb orb-left" />
       <div className="orb orb-right" />
